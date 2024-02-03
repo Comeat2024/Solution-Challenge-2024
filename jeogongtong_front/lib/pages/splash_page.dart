@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -8,6 +10,24 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  Future<void> signInWithGoogle(BuildContext context) async {
+    GoogleSignIn googleSignIn = GoogleSignIn();
+    GoogleSignInAccount? account = await googleSignIn.signIn();
+    if (account != null) {
+      GoogleSignInAuthentication authentication = await account.authentication;
+      OAuthCredential googleCredential = GoogleAuthProvider.credential(
+        idToken: authentication.idToken,
+        accessToken: authentication.accessToken,
+      );
+      UserCredential credential =
+          await _firebaseAuth.signInWithCredential(googleCredential);
+      if (credential.user != null) {
+        print(credential.user);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -45,7 +65,9 @@ class _SplashPageState extends State<SplashPage> {
             height: 30,
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              signInWithGoogle(context);
+            },
             child: const Text(
               "구글 로그인",
               style: TextStyle(color: Colors.black),
